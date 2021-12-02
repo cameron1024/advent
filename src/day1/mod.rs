@@ -1,15 +1,11 @@
-use std::{
-    fs::File,
-    io::{BufRead, BufReader},
-    path::PathBuf, slice::Windows,
-};
+use crate::input_line_nums;
 
 pub fn solution1() -> usize {
     count_increases(&input())
 }
 
 pub fn solution2() -> usize {
-   let summed = summed_list(&input());
+    let summed = summed_list(&input());
     count_increases(&summed)
 }
 
@@ -22,16 +18,13 @@ fn summed_list(i: &[i32]) -> Vec<i32> {
 }
 
 fn input() -> Vec<i32> {
-    let path = PathBuf::from(file!()).parent().unwrap().join("input");
-    let file = File::open(path).unwrap();
-    BufReader::new(file)
-        .lines()
-        .map(|s| s.unwrap().parse().unwrap())
-        .collect()
+    input_line_nums!()
 }
 
 #[cfg(test)]
 mod tests {
+
+    use test::{black_box, Bencher};
 
     use super::*;
 
@@ -43,7 +36,6 @@ mod tests {
         assert_eq!(summed_list(&[]), []);
         assert_eq!(summed_list(&[1]), []);
         assert_eq!(summed_list(&[1, 2]), []);
-
     }
 
     #[test]
@@ -66,5 +58,23 @@ mod tests {
         assert_eq!(count_increases(&[]), 0);
         assert_eq!(count_increases(&[1]), 0);
         assert_eq!(count_increases(&[1, 0]), 0);
+    }
+
+    #[bench]
+    fn bench_count_increases(b: &mut Bencher) {
+        let data = input();
+        b.iter(|| black_box(count_increases(black_box(&data))));
+    }
+
+    #[bench]
+    fn bench_summed_list(b: &mut Bencher) {
+        let data = input();
+        b.iter(|| black_box(summed_list(black_box(&data))));
+    }
+
+    #[bench]
+    fn bench_both(b: &mut Bencher) {
+        let data = input();
+        b.iter(|| black_box(count_increases(&summed_list(black_box(&data)))));
     }
 }
