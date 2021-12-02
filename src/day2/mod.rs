@@ -3,13 +3,13 @@ use Instruction::*;
 
 use crate::input_lines;
 
-fn input() -> Vec<Instruction> {
-    input_lines!().map(map_line).collect()
+fn input() -> impl Iterator<Item = String> {
+    input_lines!()
 }
 
 pub fn solution() -> i64 {
    let mut p = Position::default();
-   apply_all(&mut p, input());
+   apply_all(&mut p, input().into_iter().map(map_line));
    p.depth * p.horizontal
 }
 
@@ -60,6 +60,8 @@ fn map_line(s: impl AsRef<str>) -> Instruction {
 
 #[cfg(test)]
 mod tests {
+    use test::{Bencher, black_box};
+
     use super::*;
 
     fn test_input() -> Vec<&'static str> {
@@ -75,7 +77,7 @@ mod tests {
 
     #[test]
     fn test_parse_input() {
-        let input = input();
+        let input = input().map(map_line).collect::<Vec<_>>();
         assert_eq!(input.first(), Some(&Forward(2)));
         assert_eq!(input.last(), Some(&Forward(6)));
     }
@@ -129,4 +131,16 @@ mod tests {
             aim: 9,
         });
     }
+
+    #[bench]
+    fn bench_solution(b: &mut Bencher) {
+        let input: Vec<_> = input().collect();
+        b.iter(|| {
+            let mut p = Position::default();
+            let instructions = black_box(input.iter()).map(map_line);
+            apply_all(&mut p, instructions);
+            black_box(p)
+        });
+    }
+
 }
