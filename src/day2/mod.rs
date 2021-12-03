@@ -1,7 +1,5 @@
-
-use Instruction::*;
-
 use crate::input_lines;
+use Instruction::*;
 
 fn input() -> impl Iterator<Item = String> {
     input_lines!()

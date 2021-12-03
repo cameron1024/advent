@@ -1,3 +1,4 @@
+
 use crate::input_line_nums;
 
 pub fn solution1() -> usize {

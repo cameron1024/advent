@@ -6,9 +6,10 @@ extern crate test;
 mod utils;
 mod day1;
 mod day2;
+mod day3;
 
 fn main() {
-    println!("{}", day2::solution());
+    println!("{}", day3::solution2());
 }
 
 
