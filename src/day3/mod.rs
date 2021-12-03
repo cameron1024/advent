@@ -1,3 +1,7 @@
+
+// (hopefully) faster implementation
+pub mod fast;
+
 use crate::input_lines;
 
 fn input() -> impl Iterator<Item = String> {

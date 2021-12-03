@@ -9,7 +9,7 @@ mod day2;
 mod day3;
 
 fn main() {
-    println!("{}", day3::solution2());
+    println!("{}", day3::fast::solution1());
 }
 
 
