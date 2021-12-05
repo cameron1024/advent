@@ -1,3 +1,7 @@
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator, IntoParallelRefMutIterator};
+
+use crate::input_const;
+
 const WIDTH: usize = 5;
 const ELEMS: usize = WIDTH * WIDTH;
 
@@ -35,6 +39,14 @@ impl Board {
     fn check_win(&self) -> bool {
         (0..WIDTH).any(|i| self.check_row(i) | self.check_col(i))
     }
+
+    fn remove_number(&mut self, number: i32) {
+        for i in self.0.iter_mut() {
+            if *i == Some(number) {
+                *i = None
+            }
+        }
+    } 
 }
 
 struct Game {
@@ -65,4 +77,28 @@ impl Game {
 
         Game { boards, inputs }
     }
+
+    fn step(&mut self) -> i32 {
+        let input = self.inputs.remove(0);
+        self.boards.par_iter_mut().for_each(|b| b.remove_number(input));
+        input
+    }
+
+    fn single_winner(&self) -> Option<&Board> {
+        self.boards.par_iter().find_any(|b| b.check_win())
+    }
+
+}
+
+pub fn calculate1(s: impl AsRef<str>) -> i32 {
+    let mut game = Game::from_str(s.as_ref());
+
+    let (board, last_input) = loop {
+        let input = game.step();
+        if let Some(board) = game.single_winner() {
+            break (board, input)
+        }
+    };
+
+    board.remaining_sum() * last_input
 }

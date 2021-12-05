@@ -129,6 +129,10 @@ fn check_win(board: &Board) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use test::{black_box, Bencher};
+
+    use crate::input_const;
+
     use super::*;
 
     const GIVEN_INPUT: &str = r#"7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
@@ -204,5 +208,17 @@ mod tests {
         let game = parse_input(GIVEN_INPUT.lines());
         let answer = calculate_2(game);
         assert_eq!(answer, 1924);
+    }
+
+    #[bench]
+    fn slow_calculate(b: &mut Bencher) {
+        let input = input_const!("4");
+        b.iter(|| black_box(calculate(parse_input(black_box(input.lines())))))
+    }
+
+    #[bench]
+    fn fast_calcuate(b: &mut Bencher) {
+        let input = input_const!("4");
+        b.iter(|| black_box(fast::calculate1(black_box(input))))
     }
 }
