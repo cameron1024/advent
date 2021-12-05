@@ -1,3 +1,5 @@
+mod fast;
+
 use std::collections::HashMap;
 
 use crate::input_lines;
@@ -13,8 +15,8 @@ struct Board {
     map: HashMap<(usize, usize), Option<i32>>,
 }
 
-fn input() -> impl IntoIterator<Item = String> {
-    input_lines!()
+fn input() -> impl IntoIterator<Item = &'static str> {
+    input_lines!("4")
 }
 
 pub fn solution2() -> i64 {
@@ -77,13 +79,13 @@ fn calculate(mut game: Game) -> i64 {
     remaining_numbers as i64 * last_input as i64
 }
 
-fn parse_input(lines: impl IntoIterator<Item = String>) -> Game {
+fn parse_input(lines: impl IntoIterator<Item = &'static str>) -> Game {
     let mut lines = lines.into_iter();
     let inputs = lines.next().unwrap();
     let inputs: Vec<i32> = inputs.split(",").map(|s| s.parse().unwrap()).collect();
 
     lines.next().unwrap();
-    let lines: Vec<_> = lines.collect();
+    let lines: Vec<_> = lines.map(ToOwned::to_owned).collect();
 
     let splits = lines.split(String::is_empty);
 
@@ -151,7 +153,7 @@ mod tests {
 
     #[test]
     fn correctly_parses_inputs() {
-        let game = parse_input(GIVEN_INPUT.lines().map(ToOwned::to_owned));
+        let game = parse_input(GIVEN_INPUT.lines());
 
         assert_eq!(game.inputs.first(), Some(&7));
         assert_eq!(game.inputs.last(), Some(&1));
@@ -168,7 +170,7 @@ mod tests {
 
     #[test]
     fn steps_game() {
-        let mut game = parse_input(GIVEN_INPUT.lines().map(ToOwned::to_owned));
+        let mut game = parse_input(GIVEN_INPUT.lines());
 
         let input = step_game(&mut game);
 
@@ -179,7 +181,7 @@ mod tests {
 
     #[test]
     fn check_win_test() {
-        let mut game = parse_input(GIVEN_INPUT.lines().map(ToOwned::to_owned));
+        let mut game = parse_input(GIVEN_INPUT.lines());
 
         assert!(!check_win(&game.boards[0]));
 
@@ -192,14 +194,14 @@ mod tests {
 
     #[test]
     fn check_given_input() {
-        let game = parse_input(GIVEN_INPUT.lines().map(ToOwned::to_owned));
+        let game = parse_input(GIVEN_INPUT.lines());
         let answer = calculate(game);
         assert_eq!(answer, 4512);
     }
 
     #[test]
     fn check_given_input2() {
-        let game = parse_input(GIVEN_INPUT.lines().map(ToOwned::to_owned));
+        let game = parse_input(GIVEN_INPUT.lines());
         let answer = calculate_2(game);
         assert_eq!(answer, 1924);
     }

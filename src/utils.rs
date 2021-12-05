@@ -1,24 +1,18 @@
+#[macro_export]
+macro_rules! input_const {
+    ($path:literal) => {{
+        include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/inputs/input", $path))
+    }};
+}
 
 #[macro_export]
 macro_rules! input_lines {
-    () => {{
-        use std::io::BufRead;
-        let path = std::path::PathBuf::from(file!())
-            .parent()
-            .unwrap()
-            .join("input");
-        let file = std::fs::File::open(path).unwrap();
-        std::io::BufReader::new(file)
+    ($path:literal) => {{
+        $crate::input_const!($path)
             .lines()
-            .map(Result::unwrap)
     }};
 }
 
-#[macro_export]
-macro_rules! input_line_nums {
-    () => {{
-        crate::input_lines!()
-            .map(|s| s.parse().unwrap())
-            .collect()
-    }};
-}
+#[cfg(test)]
+const CHECK_INPUT_CONST: &str = input_const!("1");
+

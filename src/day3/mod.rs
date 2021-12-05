@@ -4,8 +4,8 @@ pub mod fast;
 
 use crate::input_lines;
 
-fn input() -> impl Iterator<Item = String> {
-    input_lines!()
+fn input() -> impl Iterator<Item = &'static str> {
+    input_lines!("3")
 }
 
 pub fn solution1() -> i64 {

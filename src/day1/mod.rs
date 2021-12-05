@@ -1,5 +1,4 @@
-
-use crate::input_line_nums;
+use crate::input_lines;
 
 pub fn solution1() -> usize {
     count_increases(&input())
@@ -19,7 +18,7 @@ fn summed_list(i: &[i32]) -> Vec<i32> {
 }
 
 fn input() -> Vec<i32> {
-    input_line_nums!()
+    input_lines!("1").map(|s| s.parse().unwrap()).collect()
 }
 
 #[cfg(test)]

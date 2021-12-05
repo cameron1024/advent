@@ -1,8 +1,8 @@
 use crate::input_lines;
 use Instruction::*;
 
-fn input() -> impl Iterator<Item = String> {
-    input_lines!()
+fn input() -> impl Iterator<Item = &'static str> {
+    input_lines!("2")
 }
 
 pub fn solution() -> i64 {
