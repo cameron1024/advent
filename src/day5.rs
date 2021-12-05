@@ -20,6 +20,7 @@ mod model {
         pub start: Point,
         pub end: Point,
     }
+
     impl Line {
         fn is_perpendicular(&self) -> bool {
             self.start.x == self.end.x || self.start.y == self.end.y
@@ -158,6 +159,8 @@ mod tests {
 
     use std::sync::atomic::Ordering;
 
+    use test::{Bencher, black_box};
+
     use super::*;
 
     #[test]
@@ -264,5 +267,26 @@ mod tests {
 
         let answer = calculate(input);
         assert_eq!(answer, 12);
+    }
+
+    #[bench]
+    fn bench_solution_1_threads(b: &mut Bencher) {
+        let input = input_const!("5");
+        std::env::set_var("RAYON_NUM_THREADS", "1");
+        b.iter(|| black_box(calculate(black_box(input))));
+    }
+
+    #[bench]
+    fn bench_solution_2_threads(b: &mut Bencher) {
+        let input = input_const!("5");
+        std::env::set_var("RAYON_NUM_THREADS", "2");
+        b.iter(|| black_box(calculate(black_box(input))));
+    }
+
+    #[bench]
+    fn bench_solution_all_threads(b: &mut Bencher) {
+        let input = input_const!("5");
+        std::env::set_var("RAYON_NUM_THREADS", "");
+        b.iter(|| black_box(calculate(black_box(input))));
     }
 }
