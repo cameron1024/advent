@@ -1,5 +1,3 @@
-use rayon::iter::ParallelIterator;
-
 use crate::input_const;
 
 use model::{Grid, Line, Point};
