@@ -1,115 +1,115 @@
-use std::cmp::max;
-use std::cmp::min;
-use std::sync::atomic::AtomicUsize;
-use std::sync::atomic::Ordering;
-
-use rayon::iter::IntoParallelIterator;
 use rayon::iter::ParallelIterator;
 
 use crate::input_const;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct Point {
-    x: usize,
-    y: usize,
-}
+use model::{Grid, Line, Point};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct Line {
-    start: Point,
-    end: Point,
-}
+mod model {
+    use std::cmp::{max, min};
 
-impl Line {
-    fn is_perpendicular(&self) -> bool {
-        self.start.x == self.end.x || self.start.y == self.end.y
+    use rayon::iter::IntoParallelIterator;
+    use rayon::iter::ParallelIterator;
+    use std::sync::atomic::AtomicUsize;
+    use std::sync::atomic::Ordering;
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct Point {
+        pub x: usize,
+        pub y: usize,
     }
 
-    fn all_points(&self) -> Vec<Point> {
-        let Point { x: x1, y: y1 } = self.start;
-        let Point { x: x2, y: y2 } = self.end;
-
-        if x1 == x2 {
-            let (y1, y2) = (min(y1, y2), max(y1, y2));
-            let x = x1;
-            (y1..=y2).map(|y| Point { x, y }).collect()
-        } else if y1 == y2 {
-            let (x1, x2) = (min(x1, x2), max(x1, x2));
-            let y = y1;
-            (x1..=x2).map(|x| Point { x, y }).collect()
-        } else {
-            // lines will always be 45 degrees
-            let x_ascending = x2 > x1;
-            let y_ascending = y2 > y1;
-            let count = if y_ascending { y2 - y1 } else { y1 - y2 };
-            let mut result = vec![Point { x: x1, y: y1 }];
-            let mut x = x1;
-            let mut y = y1;
-
-            for _ in 0..count {
-                if x_ascending {
-                    x += 1;
-                } else {
-                    x -= 1;
-                }
-                if y_ascending {
-                    y += 1;
-                } else {
-                    y -= 1;
-                }
-                result.push(Point { x, y });
-            }
-
-            result
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct Line {
+        pub start: Point,
+        pub end: Point,
+    }
+    impl Line {
+        fn is_perpendicular(&self) -> bool {
+            self.start.x == self.end.x || self.start.y == self.end.y
         }
-    }
-}
 
-#[derive(Debug)]
-struct Grid {
-    width: usize,
-    height: usize,
-    points: Vec<AtomicUsize>,
-}
+        pub fn all_points(&self) -> Vec<Point> {
+            let Point { x: x1, y: y1 } = self.start;
+            let Point { x: x2, y: y2 } = self.end;
 
-impl Grid {
-    fn new(width: usize, height: usize) -> Self {
-        let points = {
-            let mut points = Vec::with_capacity(width * height);
-            for _ in 0..(width * height) {
-                points.push(AtomicUsize::new(0))
+            if x1 == x2 {
+                let (y1, y2) = (min(y1, y2), max(y1, y2));
+                let x = x1;
+                (y1..=y2).map(|y| Point { x, y }).collect()
+            } else if y1 == y2 {
+                let (x1, x2) = (min(x1, x2), max(x1, x2));
+                let y = y1;
+                (x1..=x2).map(|x| Point { x, y }).collect()
+            } else {
+                let (x_asc, y_asc) = (x2 > x1, y2 > y1);
+                let mut result = vec![Point { x: x1, y: y1 }];
+                let (mut x, mut y) = (x1, y1);
+                let count = if y_asc { y2 - y1 } else { y1 - y2 };
+
+                for _ in 0..count {
+                    if x_asc {
+                        x += 1;
+                    } else {
+                        x -= 1;
+                    }
+                    if y_asc {
+                        y += 1;
+                    } else {
+                        y -= 1;
+                    }
+                    result.push(Point { x, y });
+                }
+
+                result
             }
-            points
-        };
-        assert_eq!(points.len(), width * height);
-        Self {
-            width,
-            height,
-            points,
         }
     }
 
-    fn get(&self, x: usize, y: usize) -> &AtomicUsize {
-        &self.points[x + (y * self.width)]
+    #[derive(Debug)]
+    pub struct Grid {
+        width: usize,
+        height: usize,
+        points: Vec<AtomicUsize>,
     }
 
-    fn apply_point(&self, Point { x, y }: Point) {
-        let atomic = self.get(x, y);
-        atomic.fetch_add(1, Ordering::Relaxed);
-    }
+    impl Grid {
+        pub fn new(width: usize, height: usize) -> Self {
+            let points = {
+                let mut points = Vec::with_capacity(width * height);
+                for _ in 0..(width * height) {
+                    points.push(AtomicUsize::new(0))
+                }
+                points
+            };
+            assert_eq!(points.len(), width * height);
+            Self {
+                width,
+                height,
+                points,
+            }
+        }
 
-    fn apply_lines(&self, lines: impl IntoParallelIterator<Item = Line>) {
-        let points = lines.into_par_iter().flat_map(|line| line.all_points());
-        points.for_each(|point| {
-            self.apply_point(point);
-        });
-    }
+        pub fn get(&self, x: usize, y: usize) -> &AtomicUsize {
+            &self.points[x + (y * self.width)]
+        }
 
-    fn count_greater_than_one(&self) -> usize {
-        self.points
-            .iter()
-            .filter(|i| i.load(Ordering::Relaxed) >= 2)
-            .count()
+        fn apply_point(&self, Point { x, y }: Point) {
+            let atomic = self.get(x, y);
+            atomic.fetch_add(1, Ordering::Relaxed);
+        }
+
+        pub fn apply_lines(&self, lines: impl IntoParallelIterator<Item = Line>) {
+            let points = lines.into_par_iter().flat_map(|line| line.all_points());
+            points.for_each(|point| {
+                self.apply_point(point);
+            });
+        }
+
+        pub fn count_greater_than_one(&self) -> usize {
+            self.points
+                .iter()
+                .filter(|i| i.load(Ordering::Relaxed) >= 2)
+                .count()
+        }
     }
 }
 
@@ -119,9 +119,7 @@ pub fn solution1() -> usize {
 
 fn calculate(s: impl AsRef<str>) -> usize {
     let (lines, width, height) = get_lines_and_max_dimensions(s.as_ref());
-    let lines = lines
-        .into_iter()
-        .collect::<Vec<_>>();
+    let lines = lines.into_iter().collect::<Vec<_>>();
     let grid = Grid::new(width, height);
     grid.apply_lines(lines);
     grid.count_greater_than_one()
@@ -159,6 +157,8 @@ fn parse_point(s: impl AsRef<str>) -> Point {
 
 #[cfg(test)]
 mod tests {
+
+    use std::sync::atomic::Ordering;
 
     use super::*;
 
@@ -263,25 +263,6 @@ mod tests {
         let (lines, width, height) = get_lines_and_max_dimensions(input);
         assert_eq!((width, height), (10, 10));
         assert_eq!(lines.len(), 10);
-
-        let grid = Grid::new(width, height);
-        
-        for line in lines {
-            println!("applying line: {:?}", line);
-            let points = line.all_points();
-            println!("points: {:#?}", points);
-
-            grid.apply_lines([line]);
-
-            for y in 0..height {
-                for x in 0..width {
-                    print!("{}", grid.get(x, y).load(Ordering::Relaxed));
-                }
-                println!();
-            }
-            println!(" ======== ");
-        }
-
 
         let answer = calculate(input);
         assert_eq!(answer, 12);
