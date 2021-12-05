@@ -12,6 +12,7 @@ mod day5;
 
 fn main() {
     println!("{}", day5::solution1());
+
 }
 
 

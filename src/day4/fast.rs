@@ -1,7 +1,3 @@
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator, IntoParallelRefMutIterator};
-
-use crate::input_const;
-
 const WIDTH: usize = 5;
 const ELEMS: usize = WIDTH * WIDTH;
 
@@ -70,7 +66,7 @@ impl Game {
         for board in board_strings {
             let values = board
                 .iter()
-                .flat_map(|s| s.split(" "))
+                .flat_map(|s| s.split_whitespace())
                 .map(|s| s.parse().unwrap());
             boards.push(Board::new(values));
         }
@@ -80,12 +76,12 @@ impl Game {
 
     fn step(&mut self) -> i32 {
         let input = self.inputs.remove(0);
-        self.boards.par_iter_mut().for_each(|b| b.remove_number(input));
+        self.boards.iter_mut().for_each(|b| b.remove_number(input));
         input
     }
 
     fn single_winner(&self) -> Option<&Board> {
-        self.boards.par_iter().find_any(|b| b.check_win())
+        self.boards.iter().find(|b| b.check_win())
     }
 
 }
@@ -102,3 +98,4 @@ pub fn calculate1(s: impl AsRef<str>) -> i32 {
 
     board.remaining_sum() * last_input
 }
+
