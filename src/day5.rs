@@ -9,6 +9,7 @@ mod model {
     use rayon::iter::ParallelIterator;
     use std::sync::atomic::AtomicUsize;
     use std::sync::atomic::Ordering;
+
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct Point {
         pub x: usize,
@@ -22,10 +23,6 @@ mod model {
     }
 
     impl Line {
-        fn is_perpendicular(&self) -> bool {
-            self.start.x == self.end.x || self.start.y == self.end.y
-        }
-
         pub fn all_points(&self) -> Vec<Point> {
             let Point { x: x1, y: y1 } = self.start;
             let Point { x: x2, y: y2 } = self.end;
@@ -92,15 +89,16 @@ mod model {
         }
 
         fn apply_point(&self, Point { x, y }: Point) {
-            let atomic = self.get(x, y);
-            atomic.fetch_add(1, Ordering::Relaxed);
+            self.get(x, y).fetch_add(1, Ordering::Relaxed);
         }
 
         pub fn apply_lines(&self, lines: impl IntoParallelIterator<Item = Line>) {
-            let points = lines.into_par_iter().flat_map(|line| line.all_points());
-            points.for_each(|point| {
-                self.apply_point(point);
-            });
+            lines
+                .into_par_iter()
+                .flat_map(|line| line.all_points())
+                .for_each(|point| {
+                    self.apply_point(point);
+                });
         }
 
         pub fn count_greater_than_one(&self) -> usize {
@@ -159,7 +157,7 @@ mod tests {
 
     use std::sync::atomic::Ordering;
 
-    use test::{Bencher, black_box};
+    use test::{black_box, Bencher};
 
     use super::*;
 
