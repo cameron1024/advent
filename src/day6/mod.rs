@@ -28,9 +28,11 @@ impl Fish {
 struct FishList(Vec<Fish>);
 
 impl FishList {
-    
     fn from_str(s: impl AsRef<str>) -> Self {
-        let fishes = s.as_ref().split(",").map(|s| Fish(s.trim().parse().unwrap()));
+        let fishes = s
+            .as_ref()
+            .split(",")
+            .map(|s| Fish(s.trim().parse().unwrap()));
         Self(fishes.collect())
     }
 
@@ -67,6 +69,8 @@ fn calculate(s: impl AsRef<str>, days: usize) -> usize {
 
 #[cfg(test)]
 mod tests {
+    use test::{black_box, Bencher};
+
     use super::*;
 
     const GIVEN_INPUT: &str = "3,4,3,1,2";
@@ -80,13 +84,10 @@ mod tests {
     #[test]
     fn parse_given_input() {
         let fishlist = FishList::from_str(GIVEN_INPUT);
-        assert_eq!(fishlist.0, vec![
-            Fish(3),
-            Fish(4),
-            Fish(3),
-            Fish(1),
-            Fish(2),
-        ]);
+        assert_eq!(
+            fishlist.0,
+            vec![Fish(3), Fish(4), Fish(3), Fish(1), Fish(2),]
+        );
     }
 
     #[test]
@@ -95,4 +96,27 @@ mod tests {
     }
 
 
+    #[bench]
+    fn slow_calc_100(b: &mut Bencher) {
+        let input = "3,4,3,1,2";
+        b.iter(|| black_box(calculate(black_box(input), black_box(100))))
+    }
+
+    #[bench]
+    fn slow_calc_150(b: &mut Bencher) {
+        let input = "3,4,3,1,2";
+        b.iter(|| black_box(calculate(black_box(input), black_box(150))))
+    }
+
+    #[bench]
+    fn fast_calc_100(b: &mut Bencher) {
+        let input = "3,4,3,1,2";
+        b.iter(|| black_box(fast::calculate(black_box(input), black_box(100))))
+    }
+
+    #[bench]
+    fn fast_calc_150(b: &mut Bencher) {
+        let input = "3,4,3,1,2";
+        b.iter(|| black_box(fast::calculate(black_box(input), black_box(150))))
+    }
 }
