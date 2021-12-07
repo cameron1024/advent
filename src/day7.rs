@@ -3,44 +3,48 @@ use std::ops::RangeInclusive;
 use crate::input_const;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct Crabs(Vec<i128>);
+struct Crabs(Vec<i64>);
 
 impl Crabs {
-    fn get_range(&self) -> RangeInclusive<i128> {
+    fn get_range(&self) -> RangeInclusive<i64> {
         let min = *self.0.iter().min().unwrap();
         let max = *self.0.iter().max().unwrap();
         min..=max
     }
 
-    fn total_distance(&self, x: i128, q2: bool) -> i128 {
-        self.0.iter().map(|s| (s - x).abs()).map(distance_fn(q2)).sum()
+    fn total_distance(&self, x: i64, q2: bool) -> i64 {
+        self.0
+            .iter()
+            .map(|s| (s - x).abs())
+            .map(distance_fn(q2))
+            .sum()
     }
 }
 
-fn distance_fn(q2: bool) -> fn(i128) -> i128 {
+fn distance_fn(q2: bool) -> fn(i64) -> i64 {
     if q2 {
         triangle
     } else {
         id
     }
 }
-fn triangle(x: i128) -> i128 {
+fn triangle(x: i64) -> i64 {
     x * (x + 1) / 2
 }
 
-fn id(x: i128) -> i128 {
+fn id(x: i64) -> i64 {
     x
 }
 
-pub fn solution1() -> i128 {
+pub fn solution1() -> i64 {
     calculate(input_const!("7"), false)
 }
 
-pub fn solution2() -> i128 {
-    calculate(input_const!("7"), false)
+pub fn solution2() -> i64 {
+    calculate(input_const!("7"), true)
 }
 
-fn calculate(s: impl AsRef<str>, q2: bool) -> i128 {
+fn calculate(s: impl AsRef<str>, q2: bool) -> i64 {
     let crabs = parse_input(s);
     crabs
         .get_range()
