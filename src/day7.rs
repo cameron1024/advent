@@ -28,6 +28,7 @@ fn distance_fn(q2: bool) -> fn(i64) -> i64 {
         id
     }
 }
+
 fn triangle(x: i64) -> i64 {
     x * (x + 1) / 2
 }
@@ -41,7 +42,7 @@ pub fn solution1() -> i64 {
 }
 
 pub fn solution2() -> i64 {
-    calculate(input_const!("7"), true)
+    calculate(input_const!("7"), false)
 }
 
 fn calculate(s: impl AsRef<str>, q2: bool) -> i64 {
