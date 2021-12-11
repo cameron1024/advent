@@ -1,3 +1,5 @@
+mod fast;
+
 use crate::input_const;
 
 fn inverse(s: char) -> char {
@@ -76,7 +78,7 @@ fn calculate2(s: &'static str) -> u64 {
         .lines()
         .filter(|s| !s.is_empty())
         .filter(|s| is_incomplete(s))
-        .map(|s| score_for_line2(s))
+        .map(score_for_line2)
         .collect();
 
     scores.sort();
@@ -115,7 +117,6 @@ mod tests {
 [[<[([]))<([[{}[[()]]]
 [{[{({}]{}}([{[{{{}}([]
 {<[[]]>}<{[{[{[]{()[[[]
-
 [<(<(<(<{}))><([]([]()
 <{([([[(<>()){}]>(<<{{
 <{([{{}}[<[[[<>{}]]]>[]"#;
