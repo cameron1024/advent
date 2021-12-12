@@ -20,5 +20,4 @@ mod utils;
 
 fn main() {
     dbg!(day12::solution1());
-    dbg!(day11::solution2());
 }
