@@ -148,7 +148,9 @@ pub fn print_solution2() {
 #[cfg(test)]
 mod tests {
 
-    use super::*;
+    use std::io::Read;
+use 
+    super::*;
 
     const GIVEN_INPUT: &str = r#"6,10
 0,14
@@ -191,6 +193,5 @@ fold along x=5"#;
         assert_eq!(paper.dots(), 17);
         paper.apply_fold(folds.remove(0));
         paper.pretty_print();
-        panic!();
     }
 }
