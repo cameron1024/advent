@@ -136,7 +136,7 @@ pub fn solution1() -> usize {
 }
 
 pub fn print_solution2() {
-    let (mut paper, mut folds) = Paper::from_str(input_const!("13"));
+    let (mut paper, folds) = Paper::from_str(input_const!("13"));
     for fold in folds {
         paper.apply_fold(fold);
     }
@@ -148,7 +148,6 @@ pub fn print_solution2() {
 #[cfg(test)]
 mod tests {
 
-    use std::io::Read;
 use 
     super::*;
 

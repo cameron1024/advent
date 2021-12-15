@@ -18,10 +18,10 @@ mod day11;
 mod day12;
 mod day13;
 mod day14;
+mod day15;
 mod utils;
 
 fn main() {
     
-    dbg!(day14::solution1());
-    dbg!(day14::solution2());
+    dbg!(day15::solution1());
 }
