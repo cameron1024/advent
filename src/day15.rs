@@ -1,19 +1,53 @@
-use std::collections::HashMap;
+use pathfinding::prelude::dijkstra;
 
 use crate::input_const;
 
 pub fn solution1() -> u64 {
-    Grid::from_str(input_const!("16")).calc1()
+    Grid::from_str(input_const!("15")).calc1()
+}
+
+pub fn solution2() -> u64 {
+    Grid::from_str(input_const!("15")).expand().calc1()
 }
 
 struct Grid {
     size: usize,
     points: Vec<u64>,
 
-    cache: HashMap<(isize, isize), u64>,
+}
+
+fn wrap(i: u64) -> u64 {
+    if i > 9 {
+        i - 9
+    } else {
+        i
+    }
 }
 
 impl Grid {
+
+    fn expand(self) -> Self {
+        let old_size = self.size;
+        let new_size = old_size * 5;
+        let mut grid = Grid {
+            size: new_size,
+            points: vec![0; new_size * new_size]
+        };
+        for a in 0..5 {
+            for b in 0..5 {
+               for x in 0..old_size {
+                   for y in 0..old_size {
+                       let shift = a + b;
+                       let value = self.get(x, y) + shift;
+                       *grid.get_mut(x + old_size * a as usize, y + old_size * b as usize) = wrap(value);
+                   }
+               } 
+            }
+        }
+
+        grid
+    }
+
     fn from_str(s: impl AsRef<str>) -> Self {
         let size = s.as_ref().lines().next().unwrap().len();
         let mut points = Vec::with_capacity(size * size);
@@ -30,7 +64,6 @@ impl Grid {
         Self {
             size,
             points,
-            cache: HashMap::new(),
         }
     }
 
@@ -38,51 +71,31 @@ impl Grid {
         self.points[x + y * self.size]
     }
 
-    fn calc(&mut self, x: isize, y: isize) -> u64 {
-        if self.cache.contains_key(&(x, y)) {
-            *self.cache.get(&(x, y)).unwrap()
-        } else {
-            let result = if x == 0 && y == 0 {
-                0
-            } else if x == 0 {
-                self.get(x as usize, y as usize) + self.calc(x, y - 1)
-            } else if y == 0 {
-                self.get(x as usize, y as usize) + self.calc(x - 1, y)
-            } else {
-                let above = self.calc(x - 1, y);
-                let left = self.calc(x, y - 1);
-                std::cmp::min(above, left) + self.get(x as usize, y as usize)
-            };
-
-            self.cache.insert((x, y), result);
-            result
-        }
+    fn get_mut(&mut self, x: usize, y: usize) -> &mut u64 {
+        self.points.get_mut(x + y * self.size).unwrap()
     }
 
-    fn calc1(mut self) -> u64 {
-        self.calc((self.size - 1) as isize, (self.size - 1) as isize)
-    }
-
-    fn calculate1(mut self) -> u64 {
-        self.points[0] = 0;
-        let limit = self.size - 1;
-
-        for y in (0..self.size).rev() {
-            for x in (0..self.size).rev() {
-                if x == limit && y < limit {
-                    self.points[x + y * self.size] += self.get(x, y + 1);
-                } else if x < limit && y == limit {
-                    self.points[x + y * self.size] += self.get(x + 1, y);
-                } else if x < limit && y < limit {
-                    let bottom = self.get(x, y + 1);
-                    let right = self.get(x + 1, y);
-                    self.points[x + y * self.size] += std::cmp::min(bottom, right);
-                }
+    fn calc1(&self) -> u64 {
+        let (_, n) = dijkstra(&(0usize, 0usize), |&(x, y)| {
+            let mut v = vec![];
+            if x > 0 {
+                v.push((x - 1, y));
             }
-        }
+            if y > 0 {
+                v.push((x, y - 1));
+            }
+            if x < self.size - 1 {
+                v.push((x + 1, y));
+            }
+            if y < self.size - 1 {
+                v.push((x, y + 1));
+            }
+            v.into_iter().map(|(x, y)| ((x, y), self.get(x, y)))
+        }, |coord| coord == &(self.size - 1, self.size - 1)).unwrap();
 
-        self.points[0]
+        n
     }
+
 }
 
 #[cfg(test)]
@@ -107,8 +120,8 @@ mod tests {
         assert_eq!(grid.get(0, 0), 1);
         assert_eq!(grid.get(1, 1), 3);
         assert_eq!(grid.get(9, 9), 1);
-
         assert_eq!(grid.calc1(), 40);
+
     }
 
     #[test]
@@ -119,5 +132,12 @@ mod tests {
         assert_eq!(grid.get(0, 0), 2);
         assert_eq!(grid.get(1, 1), 1);
         assert_eq!(grid.get(99, 99), 9);
+    }
+
+    #[test]
+    fn part_2_given() {
+        let grid = Grid::from_str(GIVEN_INPUT);
+        let grid = grid.expand();
+        assert_eq!(grid.calc1(), 315);
     }
 }

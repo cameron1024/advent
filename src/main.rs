@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-#![feature(test)]
+#![feature(test, box_syntax, box_patterns)]
 
 
 extern crate test;
@@ -19,9 +19,11 @@ mod day12;
 mod day13;
 mod day14;
 mod day15;
+mod day16;
 mod utils;
 
 fn main() {
     
-    dbg!(day15::solution1());
+    dbg!(day16::solution1());
+    dbg!(day16::solution2());
 }
